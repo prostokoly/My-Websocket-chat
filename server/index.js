@@ -16,10 +16,31 @@ app.get("api", (req, res) => {
     });
 });
 
+const users = [];
+
 socketIO.on("connection", (socket) => {
     console.log(`${socket.id} user connected`);
+
+    socket.on("message", (data) => {
+        socketIO.emit("response", data);
+    });
+
+    socket.on("newUser", (data) => {
+        if (!users.some((u) => u.socketID === data.socketID)) {
+            users.push(data);
+        }
+        socketIO.emit("responseNewUser", users);
+    });
+
     socket.on("disconnect", () => {
         console.log(`${socket.id} user disconnected`);
+
+        const index = users.findIndex((u) => u.socketID === socket.id);
+        if (index !== -1) {
+            users.splice(index, 1);
+        }
+
+        socketIO.emit("responseNewUser", users);
     });
 });
 
