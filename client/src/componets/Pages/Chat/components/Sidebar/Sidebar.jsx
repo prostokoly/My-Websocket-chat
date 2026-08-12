@@ -1,14 +1,25 @@
-import React from "react";
+import React, { use, useEffect, useState } from "react";
 import styles from "./styles.module.css";
 
-const Sidebar = () => {
+const Sidebar = ({ socket }) => {
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        const handleResponseNewUser = (data) => {
+            setUsers([data]);
+        };
+        socket.on("responseNewUser", handleResponseNewUser);
+        return () => {
+            socket.off("responseNewUser", handleResponseNewUser);
+        };
+    }, [socket]);
     return (
         <div className={styles.sidebar}>
             <h4 className={styles.header}>USERS</h4>
             <ul className={styles.users}>
-                <li>User1</li>
-                <li>User2</li>
-                <li>User3</li>
+                {users.map((item) => (
+                    <li key={item.socketID}>{item.user}</li>
+                ))}
             </ul>
         </div>
     );
